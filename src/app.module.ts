@@ -5,7 +5,16 @@ import { GraphQLModule } from '@nestjs/graphql'
 import { join } from 'path'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { SampleModule } from './common/models/sample/sample.module'
+import { FirebaseModule } from './common/firebase/firebase.module'
+import { PrismaModule } from './common/prisma/prisma.module'
+import { AgentsModule } from './models/agents/agents.module'
+import { AuthModule } from './models/auth/auth.module'
+import { BuyersModule } from './models/buyers/buyers.module'
+import { MessagesModule } from './models/messages/messages.module'
+import { PropertiesModule } from './models/properties/properties.module'
+import { SellersModule } from './models/sellers/sellers.module'
+import { UserHomesModule } from './models/user-homes/user-homes.module'
+import { ViewsModule } from './models/views/views.module'
 
 @Module({
   imports: [
@@ -18,7 +27,18 @@ import { SampleModule } from './common/models/sample/sample.module'
         numberScalarMode: 'integer',
       },
     }),
-    SampleModule,
+    PrismaModule,
+    FirebaseModule,
+
+    AuthModule,
+
+    SellersModule,
+    BuyersModule,
+    AgentsModule,
+    PropertiesModule,
+    MessagesModule,
+    UserHomesModule,
+    ViewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
