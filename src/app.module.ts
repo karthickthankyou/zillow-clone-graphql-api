@@ -15,6 +15,8 @@ import { PropertiesModule } from './models/properties/properties.module'
 import { SellersModule } from './models/sellers/sellers.module'
 import { UserHomesModule } from './models/user-homes/user-homes.module'
 import { ViewsModule } from './models/views/views.module'
+import { LocationStatsModule } from './models/location-stats/location-stats.module'
+import { BedPricesModule } from './models/bed-prices/bed-prices.module'
 
 @Module({
   imports: [
@@ -39,6 +41,9 @@ import { ViewsModule } from './models/views/views.module'
     MessagesModule,
     UserHomesModule,
     ViewsModule,
+
+    LocationStatsModule,
+    BedPricesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

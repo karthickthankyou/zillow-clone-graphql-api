@@ -8,8 +8,16 @@ import { UpdateUserHomeInput } from './dto/update-user-home.input'
 export class UserHomesService {
   constructor(private readonly prisma: PrismaService) {}
   create(createUserHomeInput: CreateUserHomeInput) {
-    return this.prisma.userHome.create({
-      data: createUserHomeInput,
+    const { buyerUid, propertyId, type } = createUserHomeInput
+    return this.prisma.userHome.upsert({
+      create: { type, buyerUid, propertyId },
+      update: { type },
+      where: {
+        buyerUid_propertyId: {
+          buyerUid,
+          propertyId,
+        },
+      },
     })
   }
 

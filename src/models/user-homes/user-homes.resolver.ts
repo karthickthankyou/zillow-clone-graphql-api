@@ -29,18 +29,34 @@ export class UserHomesResolver {
 
   @AllowAuthenticated()
   @Mutation(() => UserHome)
-  createUserHome(
+  async createUserHome(
     @Args('createUserHomeInput') args: CreateUserHomeInput,
     @GetUser() user: GetUserType,
   ) {
+    const buyer = await this.prisma.buyer.findUnique({
+      where: { uid: user.uid },
+    })
+
+    if (!buyer?.uid) {
+      await this.prisma.buyer.create({ data: { uid: user.uid } })
+    }
+    console.log('buyer', buyer)
     checkRowLevelPermission(user, args.buyerUid)
     return this.userHomesService.create(args)
   }
 
-  @AllowAuthenticated('admin')
+  @AllowAuthenticated()
   @Query(() => [UserHome], { name: 'userHomes' })
   findAll(@Args() args: FindManyUserHomeArgs) {
     return this.userHomesService.findAll(args)
+  }
+  @AllowAuthenticated()
+  @Query(() => [UserHome], { name: 'myHomes' })
+  myHomes(@Args() args: FindManyUserHomeArgs, @GetUser() user: GetUserType) {
+    return this.userHomesService.findAll({
+      ...args,
+      where: { ...args.where, buyerUid: { equals: user.uid } },
+    })
   }
 
   @AllowAuthenticated()

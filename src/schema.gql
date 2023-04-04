@@ -16,9 +16,7 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Message {
-  buyerUid: String
-  agentUid: String
-  sellerUid: String
+  uid: String!
   id: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -36,6 +34,8 @@ type GroupedMessages {
 }
 
 type Property {
+  lat: Float
+  lng: Float
   description: String
   features: String
   facts: String
@@ -47,8 +47,6 @@ type Property {
   id: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
-  lat: Int!
-  lng: Int!
   lotSize: Int!
   city: String!
   state: String!
@@ -63,6 +61,7 @@ type Property {
   seller: Seller!
   agents: [Agent!]!
   userHomes: [UserHome!]!
+  wishlisted: UserHome
   messages: [Message!]!
   views: [View!]!
 }
@@ -153,6 +152,32 @@ type Seller {
   messages: [GroupedMessages!]!
 }
 
+type LocationStats {
+  type: LocationStatsType
+  images: [String!]!
+  name: String!
+  id: Int!
+  totalHomes: Int!
+  lat: Int!
+  lng: Int!
+  priceSqft: Int!
+  bedPrices: [BedPrice!]
+}
+
+enum LocationStatsType {
+  city
+  state
+}
+
+type BedPrice {
+  id: Int!
+  avg: Int!
+  beds: String!
+  count: Int!
+  sqftAvg: Int!
+  locationStatsId: Int!
+}
+
 type Query {
   sellers(where: SellerWhereInput, orderBy: [SellerOrderByWithRelationInput!], cursor: WhereUniqueInputUid, take: Int, skip: Int, distinct: [SellerScalarFieldEnum!]): [Seller!]!
   seller(where: SellerWhereUniqueInput): Seller!
@@ -161,13 +186,19 @@ type Query {
   agents(where: AgentWhereInput, orderBy: [AgentOrderByWithRelationInput!], cursor: WhereUniqueInputUid, take: Int, skip: Int, distinct: [AgentScalarFieldEnum!]): [Agent!]!
   agent(where: AgentWhereUniqueInput): Agent!
   properties(where: PropertyWhereInput, orderBy: [PropertyOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [PropertyScalarFieldEnum!]): [Property!]!
-  property(where: PropertyWhereUniqueInput): Property!
+  myProperties(where: PropertyWhereInput, orderBy: [PropertyOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [PropertyScalarFieldEnum!]): [Property!]!
+  property(where: PropertyWhereUniqueInput): Property
   messages(where: MessageWhereInput, orderBy: [MessageOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [MessageScalarFieldEnum!]): [Message!]!
   message(where: MessageWhereUniqueInput): Message!
   userHomes(where: UserHomeWhereInput, orderBy: [UserHomeOrderByWithRelationInput!], cursor: UserHomeWhereUniqueInput, take: Int, skip: Int, distinct: [UserHomeScalarFieldEnum!]): [UserHome!]!
+  myHomes(where: UserHomeWhereInput, orderBy: [UserHomeOrderByWithRelationInput!], cursor: UserHomeWhereUniqueInput, take: Int, skip: Int, distinct: [UserHomeScalarFieldEnum!]): [UserHome!]!
   userHome(where: UserHomeWhereUniqueInput): UserHome!
   views(where: ViewWhereInput, orderBy: [ViewOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [ViewScalarFieldEnum!]): [View!]!
   view(where: ViewWhereUniqueInput): View!
+  locationStats(where: LocationStatsWhereInput, orderBy: [LocationStatsOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [LocationStatsScalarFieldEnum!]): [LocationStats!]!
+  locationStat(where: LocationStatsWhereUniqueInput): LocationStats!
+  bedPrices(where: BedPriceWhereInput, orderBy: [BedPriceOrderByWithRelationInput!], cursor: WhereUniqueInputNumber, take: Int, skip: Int, distinct: [BedPriceScalarFieldEnum!]): [BedPrice!]!
+  bedPrice(where: BedPriceWhereUniqueInput): BedPrice!
 }
 
 input SellerWhereInput {
@@ -221,15 +252,15 @@ input PropertyWhereInput {
   id: IntFilter
   createdAt: DateTimeFilter
   updatedAt: DateTimeFilter
-  lat: IntFilter
-  lng: IntFilter
+  lat: FloatFilter
+  lng: FloatFilter
   description: StringFilter
   lotSize: IntFilter
   features: StringFilter
   city: StringFilter
   state: StringFilter
   facts: StringFilter
-  style: Style
+  style: EnumStyleFilter
   address: StringFilter
   priceSqft: IntFilter
   sqft: IntFilter
@@ -261,6 +292,24 @@ input IntFilter {
   gt: Int
   gte: Int
   not: Int
+}
+
+input FloatFilter {
+  equals: Float
+  in: Float
+  notIn: Float
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+  not: Float
+}
+
+input EnumStyleFilter {
+  equals: Style
+  in: [Style!]
+  notIn: [Style!]
+  not: Style
 }
 
 input StringListFilter {
@@ -310,13 +359,8 @@ input MessageWhereInput {
   updatedAt: DateTimeFilter
   message: StringFilter
   propertyId: IntFilter
-  buyerUid: StringFilter
-  agentUid: StringFilter
-  sellerUid: StringFilter
+  uid: StringFilter
   property: PropertyRelationFilter
-  buyer: BuyerRelationFilter
-  agent: AgentRelationFilter
-  seller: SellerRelationFilter
   AND: [MessageWhereInput!]
   OR: [MessageWhereInput!]
   NOT: [MessageWhereInput!]
@@ -325,23 +369,6 @@ input MessageWhereInput {
 input PropertyRelationFilter {
   is: PropertyWhereInput
   isNot: PropertyWhereInput
-}
-
-input BuyerRelationFilter {
-  is: BuyerWhereInput
-  isNot: BuyerWhereInput
-}
-
-input BuyerWhereInput {
-  uid: StringFilter
-  createdAt: DateTimeFilter
-  updatedAt: DateTimeFilter
-  interests: UserHomeListRelationFilter
-  messages: MessageListRelationFilter
-  views: ViewListRelationFilter
-  AND: [BuyerWhereInput!]
-  OR: [BuyerWhereInput!]
-  NOT: [BuyerWhereInput!]
 }
 
 input UserHomeListRelationFilter {
@@ -364,6 +391,23 @@ input UserHomeWhereInput {
   NOT: [UserHomeWhereInput!]
 }
 
+input BuyerRelationFilter {
+  is: BuyerWhereInput
+  isNot: BuyerWhereInput
+}
+
+input BuyerWhereInput {
+  uid: StringFilter
+  createdAt: DateTimeFilter
+  updatedAt: DateTimeFilter
+  interests: UserHomeListRelationFilter
+  messages: MessageListRelationFilter
+  views: ViewListRelationFilter
+  AND: [BuyerWhereInput!]
+  OR: [BuyerWhereInput!]
+  NOT: [BuyerWhereInput!]
+}
+
 input ViewListRelationFilter {
   every: ViewWhereInput
   some: ViewWhereInput
@@ -381,11 +425,6 @@ input ViewWhereInput {
   AND: [ViewWhereInput!]
   OR: [ViewWhereInput!]
   NOT: [ViewWhereInput!]
-}
-
-input AgentRelationFilter {
-  is: AgentWhereInput
-  isNot: AgentWhereInput
 }
 
 input SellerOrderByWithRelationInput {
@@ -545,13 +584,8 @@ input MessageOrderByWithRelationInput {
   updatedAt: SortOrder
   message: SortOrder
   propertyId: SortOrder
-  buyerUid: SortOrder
-  agentUid: SortOrder
-  sellerUid: SortOrder
+  uid: SortOrder
   property: PropertyOrderByWithRelationInput
-  buyer: BuyerOrderByWithRelationInput
-  agent: AgentOrderByWithRelationInput
-  seller: SellerOrderByWithRelationInput
 }
 
 enum MessageScalarFieldEnum {
@@ -560,9 +594,7 @@ enum MessageScalarFieldEnum {
   updatedAt
   message
   propertyId
-  buyerUid
-  agentUid
-  sellerUid
+  uid
 }
 
 input MessageWhereUniqueInput {
@@ -619,6 +651,99 @@ input ViewWhereUniqueInput {
   id: Int
 }
 
+input LocationStatsWhereInput {
+  images: StringFilter
+  name: StringFilter
+  id: IntFilter
+  totalHomes: IntFilter
+  lat: FloatFilter
+  lng: FloatFilter
+  priceSqft: IntFilter
+  type: LocationStatsType
+  bedsPrice: BedPriceListRelationFilter
+  AND: [LocationStatsWhereInput!]
+  OR: [LocationStatsWhereInput!]
+  NOT: [LocationStatsWhereInput!]
+}
+
+input BedPriceListRelationFilter {
+  every: BedPriceWhereInput
+  some: BedPriceWhereInput
+  none: BedPriceWhereInput
+}
+
+input BedPriceWhereInput {
+  id: IntFilter
+  avg: IntFilter
+  beds: StringFilter
+  count: IntFilter
+  sqftAvg: IntFilter
+  locationStatsId: IntFilter
+  locationStats: LocationStatsRelationFilter
+  AND: [BedPriceWhereInput!]
+  OR: [BedPriceWhereInput!]
+  NOT: [BedPriceWhereInput!]
+}
+
+input LocationStatsRelationFilter {
+  is: LocationStatsWhereInput
+  isNot: LocationStatsWhereInput
+}
+
+input LocationStatsOrderByWithRelationInput {
+  images: SortOrder
+  name: SortOrder
+  id: SortOrder
+  totalHomes: SortOrder
+  lat: SortOrder
+  lng: SortOrder
+  priceSqft: SortOrder
+  type: SortOrder
+  bedsPrice: BedPriceOrderByRelationAggregateInput
+}
+
+input BedPriceOrderByRelationAggregateInput {
+  _count: SortOrder
+}
+
+enum LocationStatsScalarFieldEnum {
+  id
+  totalHomes
+  name
+  lat
+  lng
+  priceSqft
+  images
+  type
+}
+
+input LocationStatsWhereUniqueInput {
+  id: Int
+}
+
+input BedPriceOrderByWithRelationInput {
+  id: SortOrder
+  avg: SortOrder
+  beds: SortOrder
+  count: SortOrder
+  sqftAvg: SortOrder
+  locationStatsId: SortOrder
+  locationStats: LocationStatsOrderByWithRelationInput
+}
+
+enum BedPriceScalarFieldEnum {
+  id
+  avg
+  beds
+  count
+  sqftAvg
+  locationStatsId
+}
+
+input BedPriceWhereUniqueInput {
+  id: Int
+}
+
 type Mutation {
   login(credentials: LoginInput!): LoginOutput!
   register(credentials: RegisterInput!): RegisterOutput!
@@ -645,6 +770,12 @@ type Mutation {
   createView(createViewInput: CreateViewInput!): View!
   updateView(updateViewInput: UpdateViewInput!): View!
   removeView(where: ViewWhereUniqueInput): View!
+  createLocationStats(createLocationStatsInput: CreateLocationStatsInput!): LocationStats!
+  updateLocationStats(updateLocationStatsInput: UpdateLocationStatsInput!): LocationStats!
+  removeLocationStats(where: LocationStatsWhereUniqueInput): LocationStats!
+  createBedPrice(createBedPriceInput: CreateBedPriceInput!): BedPrice!
+  updateBedPrice(updateBedPriceInput: UpdateBedPriceInput!): BedPrice!
+  removeBedPrice(where: BedPriceWhereUniqueInput): BedPrice!
 }
 
 input LoginInput {
@@ -698,6 +829,8 @@ input UpdateAgentInput {
 }
 
 input CreatePropertyInput {
+  lat: Float
+  lng: Float
   description: String
   features: String
   facts: String
@@ -706,8 +839,6 @@ input CreatePropertyInput {
   beds: Int
   bath: Int
   sellerUid: String!
-  lat: Int!
-  lng: Int!
   lotSize: Int!
   city: String!
   state: String!
@@ -722,6 +853,8 @@ input CreatePropertyInput {
 }
 
 input UpdatePropertyInput {
+  lat: Float
+  lng: Float
   description: String
   features: String
   facts: String
@@ -730,8 +863,6 @@ input UpdatePropertyInput {
   beds: Int
   bath: Int
   sellerUid: String
-  lat: Int
-  lng: Int
   lotSize: Int
   city: String
   state: String
@@ -747,9 +878,7 @@ input UpdatePropertyInput {
 }
 
 input CreateMessageInput {
-  buyerUid: String
-  agentUid: String
-  sellerUid: String
+  uid: String!
   message: String!
   propertyId: Int!
 }
@@ -775,5 +904,50 @@ input CreateViewInput {
 input UpdateViewInput {
   propertyId: Int
   buyerUid: String
+  id: Int!
+}
+
+input CreateLocationStatsInput {
+  type: LocationStatsType
+  name: String!
+  totalHomes: Int!
+  lat: Int!
+  lng: Int!
+  priceSqft: Int!
+  bedPrices: [CreateBedPriceInputWithoutLocationId!]!
+}
+
+input CreateBedPriceInputWithoutLocationId {
+  avg: Int!
+  beds: String!
+  count: Int!
+  sqftAvg: Int!
+}
+
+input UpdateLocationStatsInput {
+  type: LocationStatsType
+  name: String
+  totalHomes: Int
+  lat: Int
+  lng: Int
+  priceSqft: Int
+  bedPrices: [CreateBedPriceInputWithoutLocationId!]
+  id: Int!
+}
+
+input CreateBedPriceInput {
+  avg: Int!
+  beds: String!
+  count: Int!
+  sqftAvg: Int!
+  locationStatsId: Int!
+}
+
+input UpdateBedPriceInput {
+  avg: Int
+  beds: String
+  count: Int
+  sqftAvg: Int
+  locationStatsId: Int
   id: Int!
 }

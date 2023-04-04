@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -16,7 +17,6 @@ model Seller {
     updatedAt DateTime @default(now())
 
     properties Property[]
-    messages   Message[]
 }
 
 model Buyer {
@@ -25,8 +25,8 @@ model Buyer {
     updatedAt DateTime @default(now())
 
     interests UserHome[]
-    messages  Message[]
-    views     View[]
+
+    views View[]
 }
 
 model Agent {
@@ -35,7 +35,6 @@ model Agent {
     updatedAt DateTime @default(now())
 
     properties Property[]
-    messages   Message[]
 }
 
 model Property {
@@ -93,12 +92,34 @@ model Message {
     propertyId Int
     property   Property @relation(fields: [propertyId], references: [id])
 
-    buyer     Buyer?  @relation(fields: [buyerUid], references: [uid])
-    buyerUid  String?
-    agent     Agent?  @relation(fields: [agentUid], references: [uid])
-    agentUid  String?
-    seller    Seller? @relation(fields: [sellerUid], references: [uid])
-    sellerUid String?
+    uid String
+}
+
+model LocationStats {
+    id         Int               @id @default(autoincrement())
+    totalHomes Int
+    name       String            @default("")
+    lat        Float
+    lng        Float
+    priceSqft  Int
+    images     String[]
+    type       LocationStatsType
+    bedsPrice  BedPrice[]
+}
+
+enum LocationStatsType {
+    city
+    state
+}
+
+model BedPrice {
+    id              Int           @id @default(autoincrement())
+    avg             Int
+    beds            String
+    count           Int
+    sqftAvg         Int
+    locationStats   LocationStats @relation(fields: [locationStatsId], references: [id])
+    locationStatsId Int
 }
 
 model UserHome {

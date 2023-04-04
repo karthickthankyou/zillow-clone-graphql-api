@@ -31,19 +31,9 @@ export class MessageWhereInput implements Required<Prisma.MessageWhereInput> {
   @Field(() => IntFilter, { nullable: true })
   propertyId: IntFilter
   @Field(() => StringFilter, { nullable: true })
-  buyerUid: StringFilter
-  @Field(() => StringFilter, { nullable: true })
-  agentUid: StringFilter
-  @Field(() => StringFilter, { nullable: true })
-  sellerUid: StringFilter
+  uid: StringFilter
   @Field(() => PropertyRelationFilter, { nullable: true })
   property: PropertyRelationFilter
-  @Field(() => BuyerRelationFilter, { nullable: true })
-  buyer: BuyerRelationFilter
-  @Field(() => AgentRelationFilter, { nullable: true })
-  agent: AgentRelationFilter
-  @Field(() => SellerRelationFilter, { nullable: true })
-  seller: SellerRelationFilter
 
   @Field(() => [MessageWhereInput], { nullable: true })
   AND: MessageWhereInput[]

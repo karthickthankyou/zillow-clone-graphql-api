@@ -20,6 +20,7 @@ import { Message } from '../messages/entities/message.entity'
 import { View } from '../views/entities/view.entity'
 import {
   AllowAuthenticated,
+  AllowAuthenticatedOptional,
   GetUser,
 } from 'src/common/decorators/auth/auth.decorator'
 import { GetUserType } from 'src/common/types'
@@ -34,11 +35,20 @@ export class PropertiesResolver {
 
   @AllowAuthenticated()
   @Mutation(() => Property)
-  createProperty(
+  async createProperty(
     @Args('createPropertyInput') args: CreatePropertyInput,
     @GetUser() user: GetUserType,
   ) {
+    console.log('User ', user)
     checkRowLevelPermission(user, args.sellerUid)
+    // Create seller.
+    const seller = await this.prisma.seller.findUnique({
+      where: { uid: user.uid },
+    })
+    if (!seller?.uid) {
+      await this.prisma.seller.create({ data: { uid: user.uid } })
+    }
+
     return this.propertiesService.create(args)
   }
 
@@ -47,7 +57,19 @@ export class PropertiesResolver {
     return this.propertiesService.findAll(args)
   }
 
-  @Query(() => Property, { name: 'property' })
+  @AllowAuthenticated()
+  @Query(() => [Property], { name: 'myProperties' })
+  myHomesList(
+    @Args() args: FindManyPropertyArgs,
+    @GetUser() user: GetUserType,
+  ) {
+    return this.prisma.property.findMany({
+      ...args,
+      where: { ...args.where, sellerUid: user.uid },
+    })
+  }
+
+  @Query(() => Property, { name: 'property', nullable: true })
   findOne(@Args() args: FindUniquePropertyArgs) {
     return this.propertiesService.findOne(args)
   }
@@ -108,6 +130,23 @@ export class PropertiesResolver {
         propertyId: parent.id,
       },
     })
+  }
+  @AllowAuthenticatedOptional()
+  @ResolveField(() => UserHome, { nullable: true })
+  async wishlisted(@Parent() parent: Property, @GetUser() user: GetUserType) {
+    if (!user?.uid) {
+      return null
+    }
+
+    const userHome = await this.prisma.userHome.findFirst({
+      where: {
+        buyerUid: user.uid,
+        propertyId: parent.id,
+        type: { equals: 'WISHLISTED' },
+      },
+    })
+
+    return userHome
   }
 
   @AllowAuthenticated()

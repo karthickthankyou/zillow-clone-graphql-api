@@ -1,4 +1,4 @@
-import { Field, InputType, registerEnumType } from '@nestjs/graphql'
+import { Field, Float, InputType, registerEnumType } from '@nestjs/graphql'
 import { Prisma } from '@prisma/client'
 
 @InputType()
@@ -92,6 +92,25 @@ export class IntFilter {
   @Field(() => Number, { nullable: true })
   gte?: number
   @Field(() => Number, { nullable: true })
+  not?: number
+}
+@InputType()
+export class FloatFilter {
+  @Field(() => Float, { nullable: true })
+  equals?: number;
+  @Field(() => Float, { nullable: true })
+  in?: number
+  @Field(() => Float, { nullable: true })
+  notIn?: number
+  @Field(() => Float, { nullable: true })
+  lt?: number
+  @Field(() => Float, { nullable: true })
+  lte?: number
+  @Field(() => Float, { nullable: true })
+  gt?: number
+  @Field(() => Float, { nullable: true })
+  gte?: number
+  @Field(() => Float, { nullable: true })
   not?: number
 }
 

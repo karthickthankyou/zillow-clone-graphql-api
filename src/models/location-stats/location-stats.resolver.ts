@@ -1,0 +1,62 @@
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql'
+import { LocationStatsService } from './location-stats.service'
+import { LocationStats } from './entities/location-stats.entity'
+import {
+  FindManyLocationStatsArgs,
+  FindUniqueLocationStatsArgs,
+} from './dto/find.args'
+import { CreateLocationStatsInput } from './dto/create-location-stats.input'
+import { UpdateLocationStatsInput } from './dto/update-location-stats.input'
+import { BedPrice } from '../bed-prices/entities/bed-price.entity'
+import { PrismaService } from 'src/common/prisma/prisma.service'
+
+@Resolver(() => LocationStats)
+export class LocationStatsResolver {
+  constructor(
+    private readonly locationStatsService: LocationStatsService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Mutation(() => LocationStats)
+  createLocationStats(
+    @Args('createLocationStatsInput') args: CreateLocationStatsInput,
+  ) {
+    return this.locationStatsService.create(args)
+  }
+
+  @Query(() => [LocationStats], { name: 'locationStats' })
+  findAll(@Args() args: FindManyLocationStatsArgs) {
+    return this.locationStatsService.findAll(args)
+  }
+
+  @Query(() => LocationStats, { name: 'locationStat' })
+  findOne(@Args() args: FindUniqueLocationStatsArgs) {
+    return this.locationStatsService.findOne(args)
+  }
+
+  @Mutation(() => LocationStats)
+  updateLocationStats(
+    @Args('updateLocationStatsInput') args: UpdateLocationStatsInput,
+  ) {
+    return this.locationStatsService.update(args)
+  }
+
+  @Mutation(() => LocationStats)
+  removeLocationStats(@Args() args: FindUniqueLocationStatsArgs) {
+    return this.locationStatsService.remove(args)
+  }
+
+  @ResolveField(() => [BedPrice], { nullable: true })
+  async bedPrices(@Parent() parent: LocationStats) {
+    return this.prisma.bedPrice.findMany({
+      where: { locationStatsId: { equals: parent.id } },
+    })
+  }
+}

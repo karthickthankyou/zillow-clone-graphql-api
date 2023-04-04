@@ -3,6 +3,7 @@ import { Prisma, Style } from '@prisma/client'
 import {
   BoolFilter,
   DateTimeFilter,
+  FloatFilter,
   IntFilter,
   StringFilter,
   StringListFilter,
@@ -26,6 +27,18 @@ registerEnumType(Style, {
 })
 
 @InputType()
+export class EnumStyleFilter {
+  @Field(() => Style, { nullable: true })
+  equals?: Style;
+  @Field(() => [Style], { nullable: true })
+  in?: Style[]
+  @Field(() => [Style], { nullable: true })
+  notIn?: Style[]
+  @Field(() => Style, { nullable: true })
+  not?: Style
+}
+
+@InputType()
 export class PropertyWhereInput implements Required<Prisma.PropertyWhereInput> {
   @Field(() => IntFilter, { nullable: true })
   id: IntFilter
@@ -33,10 +46,10 @@ export class PropertyWhereInput implements Required<Prisma.PropertyWhereInput> {
   createdAt: DateTimeFilter
   @Field(() => DateTimeFilter, { nullable: true })
   updatedAt: DateTimeFilter
-  @Field(() => IntFilter, { nullable: true })
-  lat: IntFilter
-  @Field(() => IntFilter, { nullable: true })
-  lng: IntFilter
+  @Field(() => FloatFilter, { nullable: true })
+  lat: FloatFilter
+  @Field(() => FloatFilter, { nullable: true })
+  lng: FloatFilter
   @Field(() => StringFilter, { nullable: true })
   description: StringFilter
   @Field(() => IntFilter, { nullable: true })
@@ -49,8 +62,8 @@ export class PropertyWhereInput implements Required<Prisma.PropertyWhereInput> {
   state: StringFilter
   @Field(() => StringFilter, { nullable: true })
   facts: StringFilter
-  @Field(() => Style, { nullable: true })
-  style: Style
+  @Field(() => EnumStyleFilter, { nullable: true })
+  style: EnumStyleFilter
   @Field(() => StringFilter, { nullable: true })
   address: StringFilter
   @Field(() => IntFilter, { nullable: true })

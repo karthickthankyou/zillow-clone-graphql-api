@@ -14,10 +14,12 @@ export class PropertiesService {
   }
 
   findAll(args: FindManyPropertyArgs) {
+    console.log('Args', args)
     return this.prisma.property.findMany(args)
   }
 
   findOne(args: FindUniquePropertyArgs) {
+    console.log('args', args)
     return this.prisma.property.findUnique(args)
   }
 

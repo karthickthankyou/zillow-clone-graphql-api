@@ -10,7 +10,6 @@ import { MessagesService } from './messages.service'
 import { Message } from './entities/message.entity'
 import { FindManyMessageArgs, FindUniqueMessageArgs } from './dto/find.args'
 import { CreateMessageInput } from './dto/create-message.input'
-import { UpdateMessageInput } from './dto/update-message.input'
 
 import { Property } from '../properties/entities/property.entity'
 import { PrismaService } from 'src/common/prisma/prisma.service'
@@ -38,16 +37,11 @@ export class MessagesResolver {
     @GetUser() user: GetUserType,
   ) {
     // Additional checking required. What if the user pretends to be the other user?
-    checkRowLevelPermission(user, [
-      args.agentUid,
-      args.buyerUid,
-      args.sellerUid,
-    ])
-
+    checkRowLevelPermission(user, args.uid)
     return this.messagesService.create(args)
   }
 
-  @AllowAuthenticated('admin')
+  @AllowAuthenticated()
   @Query(() => [Message], { name: 'messages' })
   findAll(@Args() args: FindManyMessageArgs) {
     return this.messagesService.findAll(args)
@@ -60,11 +54,7 @@ export class MessagesResolver {
     @GetUser() user: GetUserType,
   ) {
     const message = await this.messagesService.findOne(args)
-    checkRowLevelPermission(user, [
-      message.agentUid,
-      message.buyerUid,
-      message.sellerUid,
-    ])
+    checkRowLevelPermission(user, message.uid)
     return message
   }
 
@@ -75,11 +65,7 @@ export class MessagesResolver {
     @GetUser() user: GetUserType,
   ) {
     const message = await this.messagesService.findOne(args)
-    checkRowLevelPermission(user, [
-      message.agentUid,
-      message.buyerUid,
-      message.sellerUid,
-    ])
+    checkRowLevelPermission(user, message.uid)
     return this.messagesService.remove(args)
   }
 
@@ -93,20 +79,20 @@ export class MessagesResolver {
   @ResolveField(() => Buyer, { nullable: true })
   async buyer(@Parent() parent: Message) {
     return this.prisma.buyer.findUnique({
-      where: { uid: parent.buyerUid },
+      where: { uid: parent.uid },
     })
   }
 
   @ResolveField(() => Agent, { nullable: true })
   async agent(@Parent() parent: Message) {
     return this.prisma.agent.findUnique({
-      where: { uid: parent.agentUid },
+      where: { uid: parent.uid },
     })
   }
   @ResolveField(() => Seller, { nullable: true })
   async seller(@Parent() parent: Message) {
     return this.prisma.seller.findUnique({
-      where: { uid: parent.sellerUid },
+      where: { uid: parent.uid },
     })
   }
 }

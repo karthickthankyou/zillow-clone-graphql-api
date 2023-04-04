@@ -20,19 +20,9 @@ export class MessageOrderByWithRelationInput
   @Field(() => Prisma.SortOrder, { nullable: true })
   propertyId: Prisma.SortOrder
   @Field(() => Prisma.SortOrder, { nullable: true })
-  buyerUid: Prisma.SortOrder
-  @Field(() => Prisma.SortOrder, { nullable: true })
-  agentUid: Prisma.SortOrder
-  @Field(() => Prisma.SortOrder, { nullable: true })
-  sellerUid: Prisma.SortOrder
+  uid: Prisma.SortOrder
   @Field(() => PropertyOrderByWithRelationInput, { nullable: true })
   property: PropertyOrderByWithRelationInput
-  @Field(() => BuyerOrderByWithRelationInput, { nullable: true })
-  buyer: BuyerOrderByWithRelationInput
-  @Field(() => AgentOrderByWithRelationInput, { nullable: true })
-  agent: AgentOrderByWithRelationInput
-  @Field(() => SellerOrderByWithRelationInput, { nullable: true })
-  seller: SellerOrderByWithRelationInput
 }
 
 @InputType()

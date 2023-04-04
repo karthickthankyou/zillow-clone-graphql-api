@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql'
+import { Field, Float, Int, ObjectType } from '@nestjs/graphql'
 import { Property as PropertyType, Style } from '@prisma/client'
 
 @ObjectType()
@@ -6,7 +6,9 @@ export class Property implements PropertyType {
   id: number
   createdAt: Date
   updatedAt: Date
+  @Field(() => Float, { nullable: true })
   lat: number
+  @Field(() => Float, { nullable: true })
   lng: number
   @Field(() => String, { nullable: true })
   description: string
